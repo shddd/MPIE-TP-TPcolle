@@ -1,10 +1,8 @@
 /******************************************************************************
-
 Welcome to GDB Online.
 GDB online is an online compiler and debugger tool for C, C++, Python, PHP, Ruby, 
 C#, OCaml, VB, Perl, Swift, Prolog, Javascript, Pascal, HTML, CSS, JS
 Code, Compile, Run and Debug online from anywhere in world.
-
 *******************************************************************************/
 #include <stdio.h>
 #include <stdlib.h>
@@ -165,7 +163,7 @@ int main()
                     printf("%d ", varh(g, a, b));
                 }
             }
-            printf("\n")
+            printf("\n");
         }
     }
 
@@ -180,7 +178,7 @@ int main()
                         printf("-%d ", varh(g, a, b));
                     }
                 }
-            printf("\n")
+            printf("\n");
             }   
         }
     }
@@ -193,6 +191,163 @@ int main()
             printf("\n");
         }
     }
+    
+    void instant_unique_par_sommet(graph g){
+        for(int s = 0; s<g.N; s++){
+            for(int i = 0; i<g.N-2; i++){
+                for (int j = i+1; j<g.N-1; j++){
+                    printf("-%d -%d", varh(g, s, i), varh(g, s, j));
+                }
+                printf("\n");
+            }
+            printf("\n");
+        }
+    }
+    
+    void deplacement(graph g){
+        for(int i = 0; i<g.N-2; i++){
+            for(int s = 0; s<g.N; s++){
+                printf("-%d ", varh(g, s, i));
+                for(int t = 0; t<g.N; t++){
+                    if(has_edge(g, s, t)){
+                        printf("%d", varh(g, t, i+1));
+                    }
+                }
+            }
+            printf("\n");
+        }
+        printf("\n");
+    }
+    
+    void cnf_hamiltonien(graph g){
+        deplacement(g);
+        instant_unique_par_sommet(g);
+        sommet_unique_par_instant(g);
+    }
+    
+    graph* set_graph3(){
+        graph* g = (graph*)malloc(sizeof(graph));
+        create_graph(g, 4);
+        set_both_edge(g, 0, 1, true);
+        set_both_edge(g, 1, 2, true);
+        set_both_edge(g, 2, 3, true);
+        set_both_edge(g, 3, 3, true);
+        return g;
+    }
+    
+    /////////////////////////////////////DPLL///////////////////////////////////////////////////
+    
+    typedef struct clause {
+        int* litt;
+        int taille;
+    }
+    clause ;
+    
+    typedef struct fnc{
+        clause* cls;
+        int taille;
+    }fnc;
+    
+    void free_litt(clause c){
+        free(c.litt);
+    }
+    
+    void free_fnc(fnc* phi){
+        for(int i = 0; i<phi->taille; i++){
+            free_litt(phi->cls[i]);
+        }
+        free(phi->cls);
+        free(phi);
+    }
+    
+    bool clause_vide(clause c){
+        if(c.taille == 0){
+            return true;
+        }
+        return false;
+    }
+    
+    bool est_unitaire(clause c){
+        int k = c.litt[0];
+        for(int i = 1; i<c.taille; i++){
+            if(c.litt[i] != k){
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    bool contient_vide(fnc phi){
+        for(int i = 0; i<phi.taille; i++){
+            if (clause_vide(phi.cls[i])){
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    bool formule_vide(fnc phi){
+        for(int i = 0; i<phi.taille; i++){
+            if (!clause_vide(phi.cls[i])){
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    int trouver_unitaire(fnc phi){
+        for(int i = 0; i<phi.taille; i++){
+            if (est_unitaire(phi.cls[i])){
+                return i;
+            }
+        }
+        return -1;
+    }
+    
+    clause *copie_clause(clause c){
+        clause *sol = (clause*)malloc(sizeof(clause));
+        int* var = (int*) malloc(sizeof(int) * c.taille);
+        for(int i = 0; i<c.taille; i++){
+            var[i] = c.litt[i];
+        }
+        sol->litt = var;
+        sol->taille = c.taille;
+        
+        return sol;
+    }
+    
+    bool propagation_clause(clause *c, int i){
+        for(int k = 0; k<c->taille; k++){
+            if(c->litt[k] == i){
+                return true;
+            }
+            if(c->litt[k] == -i){
+                int a = c->litt[c->taille];
+                c->litt[c->taille] = c->litt[k];
+                c->litt[k] = a;
+                c->taille--;
+            }
+        }
+        return false;
+    }
 
+    void propagation_fnc(fnc* phi, int i){
+        for(int k = 0; k<phi->taille; k++){
+            if(propagation_clause(&(phi->cls)[k], i)){
+                clause *tmp = copie_clause(phi->cls[i]);
+                free_litt(phi->cls[i]);
+                (phi->cls[i]) = *copie_clause(phi->cls[phi->taille]);
+                free_litt(phi->cls[phi->taille]);
+                (phi->cls[phi->taille]) = *tmp;
+                phi->taille--;
+            }
+        }
+    }
+    
+    fnc *formule_choix(fnc phi, int i){
+        
+    }
+    
+    return 0;
     
 }
